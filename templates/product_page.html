@@ -1,0 +1,189 @@
+{% extends "_base.html" %}
+{% block title %}Product {% endblock %}
+{% block content %}
+
+<!-- component -->
+<div id="productid" value="{{product.id}}" class="hidden"></div>
+<section class="text-gray-700 dark:text-white body-font overflow-hidden">
+    <div class="container px-5 py-6 lg:pt-20 lg:pb-20 mx-auto">
+      <div class="lg:w-4/5 mx-auto flex flex-wrap">
+        <img alt="ecommerce" class="lg:w-1/3 w-full object-cover object-center rounded-lg bg-gray-200 dark:bg-gray-700" src="/{{product.product_image}}">
+        <div class="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-6 lg:mt-0">
+          <h2 class="text-sm title-font text-blue-500 tracking-widest">{{product.product_category}}</h2>
+          <h1 class="text-gray-900 dark:text-white text-lg lg:text-3xl title-font font-medium mb-1">{{product.product_name}}</h1>
+          <span class="title-font font-medium text-md lg:text-2xl text-blue-600 dark:text-[#ffff00]">৳ {{product.product_price}}</span>
+          <hr class="w-48 h-1 bg-gray-200 border-0 rounded dark:bg-gray-700 my-2">
+          <p class="leading-relaxed">{{product.product_description}}</p>
+
+          <p class="mt-2 dark:text-[#ffff00]">Litre:</p>
+          <div class="flex flex-row text-lg space-x-2 mt-2">
+            <button class="text-black dark:text-white border-2 border-gray-900 dark:border-gray-200 w-10 flex justify-center rounded">{{product.product_ammount}}</button>
+            <button class="text-black dark:text-white border-2 border-gray-900 dark:border-gray-200 w-10 flex justify-center rounded">1</button>
+          </div>
+
+          <div class="flex items-center text-center mt-8 flex-row  space-x-5">
+            <span id="divpr{{product.id}}" class="divpr">
+            <button  id='["pr{{product.id}}","{{ product.product_name }}","{{ product.product_price }}"]' class="cart flex text-white bg-blue-800 border-0 py-2 px-6  text-center items-center focus:outline-none rounded">Add To Cart</button>
+            </span>
+            <a href="/place_order" id="pr{{product.id}}" class="cart dark:text-black text-white bg-black dark:bg-white border-0 py-2 px-6 text-center items-center focus:outline-none rounded">Buy it Now</a>
+          </div>
+          <img class=" mt-2 items-center" src="/static/bkash_payment_logo.png" alt="bkash">
+        </div>
+      </div>
+    </div>
+    <div class="font-bangla flex flex-col items-center">
+      অর্ডার কনফার্ম করার জন্য কল করুনঃ 
+      <br>
+      <span class="font-bold text-red-500 dark:text-red-400 text-2xl">+8801315663635</span>
+    </div>
+  </section>
+{% endblock content %}
+{% block cartjs %}
+<script>
+  function addbuttonsidecart(productid){
+    cart['pr'+productid][0]=cart['pr'+productid][0]+1;
+    if('pr'+productid== product_id){
+    document.getElementById('valpr'+productid).innerHTML = cart['pr'+productid];
+    }
+    updateCart(cart,'pr'+productid);
+}
+function minusbuttonsidecart(productid){
+    cart['pr'+productid][0]=cart['pr'+productid][0]-1;
+    if (cart['pr'+productid][0]==0){
+        nameofproduct=cart['pr'+productid][1]
+        priceofproduct=cart['pr'+productid][2]
+        delete cart['pr'+productid];
+        if ('pr'+productid== product_id){
+        document.getElementById('divpr'+productid).innerHTML= `<button id="${productid}" onclick='clickAddtocart2(${productid},"${nameofproduct}","${priceofproduct}")' class="cart bg-green2 rounded-md px-4 py-2 text-white">Add to Cart</button>`;
+        }
+    }
+    else{
+      if('pr'+productid==product_id){
+    document.getElementById('valpr'+productid).innerHTML = cart['pr'+productid];
+      }
+    }
+    updateCart(cart,'pr'+productid);
+}
+
+  if (localStorage.getItem('cart')==null){
+          var cart ={}
+        }
+        else {
+          var  product_id ='pr'+ document.getElementById('productid').getAttribute('value')
+          cart=JSON.parse(localStorage.getItem("cart"))
+          document.getElementById('cart').innerHTML = Object.keys(cart).length;
+          idstr= product_id;
+          updateCart(cart,idstr);
+        }
+        // if cart is empty write empty on sidecart 
+if (Object.keys(cart)==0){
+    document.getElementById('sideCart').innerHTML=`<div class="text-black dark:text-white mt-5">
+        Cart is empty
+    </div>`
+}
+// if cart is not empty enter products on sidebar
+else{
+    document.getElementById('sideCart').innerHTML=''
+    let total_money = 0;
+    for (var item in cart){
+        total_money+=cart[item][0]*cart[item][2]
+        document.getElementById('sideCart').innerHTML+=`<div class="mb-2">
+        <h1 class="text-black dark:text-white">${cart[item][1]}</h1>
+        <div class="flex flex-row mt-1 mb-2 justify-between items-center">
+            <div class="flex">
+                <button class="md:py-1 px-2 md:px-3 rounded bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900" onclick='minusbuttonsidecart(${item.slice(2,)})'>-</button>
+                <p class="md:py-1 px-2 md:px-3 rounded dark:text-white text-gray-900">${cart[item][0]}</p>
+                <button class="md:py-1 px-2 md:px-3 rounded text-white dark:text-gray-900 bg-gray-900 dark:bg-gray-100" onclick='addbuttonsidecart(${item.slice(2,)})'>+</button>
+            </div>
+           <p class="text-black dark:text-[#ffff00]">৳ ${cart[item][2]}</p>
+        </div>
+    </div>
+        `
+    }
+    document.getElementById('sideCart').innerHTML+=`<div class="text-black dark:text-white">Subtotal: ${total_money}</div>`
+}
+      // if the cart button is clicked 
+function clickAddtocart() {
+        id = JSON.parse(this.id)
+        var idstr = id[0];
+        var namestr = id[1];
+        var pricestr = id[2];
+        if (cart[idstr] !=undefined){
+          cart[idstr][0] = cart[idstr][0] +1
+        }
+        else {
+          cart[idstr] = [1,namestr,pricestr];
+        }
+        updateCart(cart,idstr);
+        
+        }
+
+function clickAddtocart2(id,nameofproduct,priceofproduct) {
+        var idstr = String(id)
+        if (cart['pr'+idstr] !=undefined){
+          cart['pr'+idstr][0] = cart['pr'+idstr][0] +1
+        }
+        else {
+          cart['pr'+idstr] = [1,nameofproduct,priceofproduct];
+        }
+        updateCart(cart,'pr'+idstr);
+        
+        }
+        $(' .cart').click(clickAddtocart);
+// update cart function 
+
+function updateCart(cart,idstr){
+    var sum =0 ;
+    for (var item in cart){
+        sum=sum+cart[item][0];
+    }
+    if (idstr==product_id && cart[idstr]){
+        document.getElementById('div'+idstr).innerHTML= `<button id="minus${idstr}" class="minus py-1 px-2 rounded bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900" onclick="minusbuttonsidecart(${idstr.slice(2,)})">-</button> <span class="py-1 px-1 rounded dark:text-white text-gray-900" id="val${idstr}">${cart[idstr][0]}</span> <button id="plus${idstr}" class="plus py-1 px-2 rounded bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900" onclick="addbuttonsidecart(${idstr.slice(2,)})">+</button>`;
+    }
+    // if cart is empty write empty on sidecart 
+if (Object.keys(cart)==0){
+    document.getElementById('sideCart').innerHTML=`<div class="text-black dark:text-white">
+        Cart is empty
+    </div>`
+}
+// if cart is not empty enter products on sidebar
+else{
+    total_money=0
+    document.getElementById('sideCart').innerHTML=''
+    for (var item in cart){
+        total_money+=cart[item][0]*cart[item][2]
+        document.getElementById('sideCart').innerHTML+=`<div class="mb-2">
+        <h1 class="text-black dark:text-white">${cart[item][1]}</h1>
+        <div class="flex flex-row mt-1 mb-2 justify-between">
+            <div class="flex">
+                <button class="md:py-1 px-2 md:px-3 rounded bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900" onclick='minusbuttonsidecart(${item.slice(2,)})'>-</button>
+                <p class="md:py-1 px-2 md:px-3 rounded dark:text-white text-gray-900">${cart[item][0]}</p>
+                <button class="md:py-1 px-2 md:px-3 rounded text-white dark:text-gray-900 bg-gray-900 dark:bg-gray-100" onclick='addbuttonsidecart(${item.slice(2,)})'>+</button>
+            </div>
+           <p class="text-black dark:text-[#ffff00]">৳ ${cart[item][2]}</p>
+        </div>
+    </div>
+        `
+    }
+    document.getElementById('sideCart').innerHTML+=`<div class="text-black dark:text-white">Subtotal: ${total_money}</div>`
+}
+    localStorage.setItem('cart', JSON.stringify(cart));
+    document.getElementById('cart').innerHTML = sum;
+    
+}
+
+// clear cart 
+function clearCart(){
+    if (cart[product_id]){
+      nameofproduct= cart[product_id][1]
+        priceofproduct= cart[product_id][2]
+        document.getElementById('div'+product_id).innerHTML= `<button id="${product_id}" onclick='clickAddtocart2(${product_id.slice(2,)},"${nameofproduct}","${priceofproduct}")' class="cart bg-blue-800 rounded-md px-4 py-2 text-white">Add to Cart</button>`;
+    }
+    localStorage.removeItem('cart')
+    document.getElementById('cart').innerHTML = '0';
+    cart={}
+    updateCart(cart,product_id)
+}
+</script>
+
+{% endblock cartjs %}
